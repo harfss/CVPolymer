@@ -1,0 +1,241 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../iron-icons/editor-icons.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-input/paper-input.html">
+
+
+<dom-module id="preview-cv">
+  <template>
+    <style>
+    .main-header {font-size: 15px; font-weight: bold;}
+    .header {font-size: 14px; font-weight: bold;}
+    .header-content {font-size: 12px; font-weight: bold;}
+    .card-content-in {
+    /*  --paper-card-content:{*/
+      font-size: 12px; font-weight:normal; padding: 5px;}
+    .cafe-light { color: var(--paper-grey-600); }
+    iron-icon.star:last-of-type { color: var(--paper-grey-500); }
+  
+ 
+      :host {
+        display: inline-flex;              }
+
+      .card-left{
+        --paper-card-background-color: cadetblue;        
+        width: 35%;
+        display: grid-row;
+        align-content: space-around;
+      }
+
+      .card-rigth{
+        --paper-card-background-color: rgb(244, 243, 247);
+        padding: 5px;
+        width: 65%;
+        display:grid;
+      }
+      paper-progress{
+        width: 95%;
+        --paper-progress-container-color: #64ffda;
+      }
+      .progress-level-red{
+       --paper-progress-active-color: #e91e63;
+      }
+      .progress-level-yellow{
+       --paper-progress-active-color: rgb(212, 250, 45);
+      }
+      .progress-level-green{
+        --paper-progress-active-color: green;
+      }
+      .ejemploQ{
+        --paper-card-content: { 
+          background: red;
+          padding : 10px;
+        }
+      }
+
+      
+    </style>
+    
+    <h></h>
+    <paper-card class="card-left" >
+      <div class="card-content-in">
+        <p class="main-header">[[nombre]]</p>
+        <p>[[fechaNac]]</p>        
+        <template is="dom-if" if="[[!editEmail]]">
+          <p>[[email]] <iron-icon icon="icons:create" on-click="_editar"></iron-icon></p>   
+        </template>
+        <template is="dom-if" if="[[editEmail]]">
+          <p><paper-input  id="inputEmail" value="[[email]]"> </paper-input>  <iron-icon icon="icons:check" on-click="_guardar"></iron-icon> </p>
+        </template>
+        <template is="dom-if" if="[[disponibilidadViajar]]">Disponibilidad para viajar
+          <iron-icon icon="icons:clear" on-click="_apagarDisponibilidad"></iron-icon>
+        </template>         
+      </div>      
+        <div class="card-content-in">
+          <p class="header">Skills 
+            <template is="dom-if" if="[[!lenguajesEdit]]">
+              <iron-icon  icon="icons:create" on-click="_editarSkills"></iron-icon>
+            </template>  
+            <template is="dom-if" if="[[lenguajesEdit]]">
+              <iron-icon  icon="icons:check" on-click="_guardarSkills"></iron-icon>
+            </template>      
+          </p>        
+          <template is="dom-repeat" items="[[lenguajes]]" as="lp">
+            <template is="dom-if" if="[[!lenguajesEdit]]">
+              
+              <p>[[lp.nombre]]</p>
+              <p>Nivel: <paper-progress class$="{{_definirEstiloPorNivel(lp)}}" value=[[lp.nivel]] ></paper-progress></p>
+            </template>
+            <template is="dom-if" if="[[lenguajesEdit]]">
+              <p><paper-input style="font-size: 16px;" label="[[lp.nombre]]" value="[[lp.nivel]]"> </paper-input></p>
+           </template>
+        </template>
+        </div>  
+    </paper-card>
+    <paper-card id="rightCardId" class="card-rigth">
+    <paper-card>
+        <div class="card-content-in">
+          <p class="header">Perfil profesional</p>               
+          <p>[[perfilProfesional]]</p>
+        </div>     
+    </paper-card> 
+    <paper-card  class="card-content-in">
+        <div class="card-content-in">
+          <p class="header">Formación Académica</p>
+        <template is="dom-repeat"  items="[[formacionAcademica]]"  >
+          <p>[[item.tipo]]: [[item.institucion]]</p>
+          <p>[[item.fechaIni]] - [[item.fechaFin]]</p>
+        </template> 
+        </div>    
+    </paper-card>   
+   
+    <paper-card>
+    <div class="card-content-in">
+      <p class="header">Experiencia Profesional</p>
+    <template is="dom-repeat"  items="[[jobs]]" as="job" >
+      <p class="header-content">[[job.title]]</p>
+      <p>[[job.empresa]]</p>
+      <p>[[job.fechaInicio]] -[[job.fechaFin]]</p>
+    </template> 
+    </div>    
+    </paper-card>   
+      
+    </paper-card>
+   
+    
+  </template>
+
+  <script>
+    /**
+     * `preview-cv`
+     * cv
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class PreviewCv extends Polymer.Element {
+      static get is() { return 'preview-cv'; }
+      static get properties() {
+        return {
+          nombre: {
+            type: String,
+            value: 'Rubi Gutierrez Salomon'
+          },
+          fechaNac: {
+            type: String,
+            value: '03 de Mayo 1989'
+          },
+          email: {
+            type: String,
+            value: 'rubi.gsalomon@gmail.com'
+          },
+          editEmail:{
+            type: Boolean,
+            value: false
+          },
+          perfilProfesional:{
+            type: String,
+            value:'Desarrollador de Software enfocado en Backend principalmente Java.'
+          },
+          formacionAcademica:{
+            type: Array,
+            value:[{'tipo':'Licenciatura', 'institucion':'Universidad Tecnológica de la Mixteca', 'fechaIni':'Agosto 2007','fechaFin':'Agosto 2012'}]
+          },
+          lenguajes: {
+            type: Array,
+            value: [{'nombre':'Java', 'nivel':'80', 'experiencia':'7'},
+            {'nombre':'C', 'nivel':'50', 'experiencia':'2'},
+            {'nombre':'C++', 'nivel':'50', 'experiencia':'2'},
+           {'nombre':'JavaScript', 'nivel':'30', 'experiencia':'1'}]             
+          },
+          lenguajesEdit:{
+            type: Boolean,
+            value: false
+          },
+          lenguajesComp: {
+            type: Array,
+            value: this.lenguajes,
+            computed:''    
+          },
+          
+          disponibilidadViajar:{
+            type: Boolean,
+            value: true
+          },
+          jobs: {
+            type: Array,
+            value: [{'empresa':'GreenByte Technologies, LLC', 'title':'Java Software Engineer', 'fechaInicio':'Agosto-2017', 'fechaFin':'Diciembre-2017'},
+            {'empresa':'GNP Seguros', 'title':'Desarrollador Java', 'fechaInicio':'Agosto-2017', 'fechaFin':'Diciembre-2017'},
+            {'empresa':'DSS México S.A de C.V', 'title':'Desarrollador SOA', 'fechaInicio':'Agosto-2017', 'fechaFin':'Diciembre-2017'},
+            {'empresa':'UANL- Centro de Desarrollo México', 'title':'Desarrollador SOA', 'fechaInicio':'Agosto-2017', 'fechaFin':'Diciembre-2017'}]          
+          }
+        };
+      }
+
+      _apagarDisponibilidad(){
+        this.disponibilidadViajar = false;
+      }
+
+      _definirEstiloPorNivel(item){
+        console.log("_definirEstiloPorNivel::: " + item.nivel);
+        if(item.nivel === '50')
+          return  'progress-level-yellow';
+        if(item.nivel < 50)
+          return  'progress-level-red';
+        if(item.nivel > 50)
+          return  'progress-level-green';
+      }
+
+      _editar(){
+        this.editEmail = true;
+      }
+      _guardar(){
+        this.editEmail = false;
+        this.email = this.shadowRoot.getElementById('inputEmail').value;         
+      }
+
+      _editarSkills(){
+        this.lenguajesEdit = true;
+      }
+      _guardarSkills(){
+        this.lenguajesEdit = false;
+       // this.lenguajes = this.shadowRoot.getElementById('inputEmail').value;         
+      }
+
+      _editarColorCard(e){
+
+       console.log( this.shadowRoot.getElementById('rightCardId').className);
+
+       this.shadowRoot.getElementById('rightCardId').className = 'card-left';
+      }
+
+
+    
+    }
+
+    window.customElements.define(PreviewCv.is, PreviewCv);
+  </script>
+</dom-module>

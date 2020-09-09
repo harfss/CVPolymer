@@ -1,0 +1,36 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="cv-element">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>Hello [[prop1]]!</h2>
+  </template>
+
+  <script>
+    /**
+     * `cv-element`
+     * cv
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class CvElement extends Polymer.Element {
+      static get is() { return 'cv-element'; }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'cv-element'
+          }
+        };
+      }
+    }
+
+    window.customElements.define(CvElement.is, CvElement);
+  </script>
+</dom-module>
