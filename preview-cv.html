@@ -20,17 +20,20 @@
   
  
       :host {
-        display: inline-flex;              }
+        --card-color-right: gainsboro;
+        --card-color-left: cadetblue; 
+        display: inline-flex; 
+               }
 
       .card-left{
-        --paper-card-background-color: cadetblue;        
+        --paper-card-background-color:var(--card-color-left);        
         width: 35%;
         display: grid-row;
         align-content: space-around;
       }
 
       .card-rigth{
-        --paper-card-background-color: rgb(244, 243, 247);
+        --paper-card-background-color:var(--card-color-right);
         padding: 5px;
         width: 65%;
         display:grid;
@@ -67,7 +70,7 @@
           <p>[[email]] <iron-icon icon="icons:create" on-click="_editar"></iron-icon></p>   
         </template>
         <template is="dom-if" if="[[editEmail]]">
-          <p><paper-input  id="inputEmail" value="[[email]]"> </paper-input>  <iron-icon icon="icons:check" on-click="_guardar"></iron-icon> </p>
+          <p><paper-input  id="inputEmail" value="{{email}}"> </paper-input>  <iron-icon icon="icons:check" on-click="_guardar"></iron-icon> </p>
         </template>
         <template is="dom-if" if="[[disponibilidadViajar]]">Disponibilidad para viajar
           <iron-icon icon="icons:clear" on-click="_apagarDisponibilidad"></iron-icon>
@@ -83,14 +86,16 @@
             </template>      
           </p>        
           <template is="dom-repeat" items="[[lenguajes]]" as="lp">
-            <template is="dom-if" if="[[!lenguajesEdit]]">
-              
+            <template is="dom-if" if="[[!lenguajesEdit]]">              
               <p>[[lp.nombre]]</p>
-              <p>Nivel: <paper-progress class$="{{_definirEstiloPorNivel(lp)}}" value=[[lp.nivel]] ></paper-progress></p>
+              <p>Nivel: <paper-progress class$="{{_definirEstiloPorNivel(lp)}}" value={{lp.nivel}} ></paper-progress></p>
             </template>
             <template is="dom-if" if="[[lenguajesEdit]]">
-              <p><paper-input style="font-size: 16px;" label="[[lp.nombre]]" value="[[lp.nivel]]"> </paper-input></p>
+              <p><paper-input style="font-size: 16px;" label="[[lp.nombre]]" value="{{lp.nivel}}"> </paper-input></p>
            </template>
+        </template>
+        <template is="dom-if" if="[[_congratsFlag]]">
+          <p>FELICIDADESSSSSSSSSSSSSSSSSSSSS </p>   
         </template>
         </div>  
     </paper-card>
@@ -117,7 +122,7 @@
     <template is="dom-repeat"  items="[[jobs]]" as="job" >
       <p class="header-content">[[job.title]]</p>
       <p>[[job.empresa]]</p>
-      <p>[[job.fechaInicio]] -[[job.fechaFin]]</p>
+      <p >{{_getSpellingDate(job.fechaInicio)}} - {{_getSpellingDate(job.fechaFin)}}</p>
     </template> 
     </div>    
     </paper-card>   
@@ -152,26 +157,27 @@
             type: String,
             value: 'rubi.gsalomon@gmail.com'
           },
-          editEmail:{
+          editEmail: {
             type: Boolean,
             value: false
           },
-          perfilProfesional:{
+          perfilProfesional: {
             type: String,
             value:'Desarrollador de Software enfocado en Backend principalmente Java.'
           },
-          formacionAcademica:{
+          formacionAcademica: {
             type: Array,
             value:[{'tipo':'Licenciatura', 'institucion':'Universidad Tecnológica de la Mixteca', 'fechaIni':'Agosto 2007','fechaFin':'Agosto 2012'}]
           },
           lenguajes: {
             type: Array,
-            value: [{'nombre':'Java', 'nivel':'80', 'experiencia':'7'},
-            {'nombre':'C', 'nivel':'50', 'experiencia':'2'},
-            {'nombre':'C++', 'nivel':'50', 'experiencia':'2'},
-           {'nombre':'JavaScript', 'nivel':'30', 'experiencia':'1'}]             
+            value: [{nombre:'Java', nivel:80},
+            {nombre:'C', nivel:50},
+            {nombre:'C++', nivel:50},
+            {nombre:'JavaScript', nivel:30}],
+            observer: '_checkLevel'         
           },
-          lenguajesEdit:{
+          lenguajesEdit: {
             type: Boolean,
             value: false
           },
@@ -179,29 +185,32 @@
             type: Array,
             value: this.lenguajes,
             computed:''    
-          },
-          
-          disponibilidadViajar:{
+          },          
+          disponibilidadViajar: {
             type: Boolean,
             value: true
           },
           jobs: {
             type: Array,
-            value: [{'empresa':'GreenByte Technologies, LLC', 'title':'Java Software Engineer', 'fechaInicio':'Agosto-2017', 'fechaFin':'Diciembre-2017'},
-            {'empresa':'GNP Seguros', 'title':'Desarrollador Java', 'fechaInicio':'Agosto-2017', 'fechaFin':'Diciembre-2017'},
-            {'empresa':'DSS México S.A de C.V', 'title':'Desarrollador SOA', 'fechaInicio':'Agosto-2017', 'fechaFin':'Diciembre-2017'},
-            {'empresa':'UANL- Centro de Desarrollo México', 'title':'Desarrollador SOA', 'fechaInicio':'Agosto-2017', 'fechaFin':'Diciembre-2017'}]          
+            value: [
+            {empresa:'GreenByte Technologies, LLC', title:'Java Software Engineer', fechaInicio:'01/08/2017', fechaFin:'17/12/2017'},
+            {empresa:'GNP Seguros', title:'Desarrollador Java', fechaInicio:'15/01/2014', fechaFin:'08/12/2016'},
+            {empresa:'DSS México S.A de C.V', title:'Desarrollador SOA', fechaInicio:'01/07/2013', fechaFin:'01/08/2014'},
+            {empresa:'UANL- Centro de Desarrollo México', title:'Desarrollador SOA', fechaInicio:'01/03/2013', fechaFin:'01/08/2013'}]          
+          },
+          _congratsFlag:{
+            type: Boolean,
+            value: false
           }
         };
       }
 
-      _apagarDisponibilidad(){
+      _apagarDisponibilidad() {
         this.disponibilidadViajar = false;
       }
 
-      _definirEstiloPorNivel(item){
-        console.log("_definirEstiloPorNivel::: " + item.nivel);
-        if(item.nivel === '50')
+      _definirEstiloPorNivel(item) {
+        if(item.nivel === 50)
           return  'progress-level-yellow';
         if(item.nivel < 50)
           return  'progress-level-red';
@@ -209,27 +218,76 @@
           return  'progress-level-green';
       }
 
-      _editar(){
+      _editar() {
         this.editEmail = true;
       }
-      _guardar(){
-        this.editEmail = false;
-        this.email = this.shadowRoot.getElementById('inputEmail').value;         
+      _guardar() {
+        this.editEmail = false;         
       }
-
-      _editarSkills(){
+      _editarSkills() {
         this.lenguajesEdit = true;
       }
-      _guardarSkills(){
+      _guardarSkills() {
         this.lenguajesEdit = false;
-       // this.lenguajes = this.shadowRoot.getElementById('inputEmail').value;         
+      }
+      _checkLevel(arrayActual, arrayAnterior) {
+        console.log('_checkLevel::::::::::' + arrayActual);
+        this._congratsFlag = true;
+        arrayActual.map(l => {
+          console.log('l.nivel::: ' + l.nivel);
+          if(l.nivel < 100){
+            console.log('ENTROOOOO:: ');
+            this._congratsFlag = false;
+          }
+        });        
       }
 
-      _editarColorCard(e){
-
-       console.log( this.shadowRoot.getElementById('rightCardId').className);
-
-       this.shadowRoot.getElementById('rightCardId').className = 'card-left';
+      _getSpellingDate(item) {
+        let date = item.split('/');
+        let dateText = '';
+        let mesInt = parseInt(date[1]);
+        switch(mesInt) {
+          case 1:
+            dateText += 'Enero';
+            break;
+          case 2:
+            dateText += 'Febrero';
+            break;
+          case 3:
+            dateText += 'Marzo';
+            break;
+          case 4:
+            dateText += 'Abril';
+            break;
+          case 5:
+            dateText += 'Mayo';
+            break;
+          case 6:
+            dateText += 'Junio';
+            break;
+          case 7:
+            dateText += 'Julio';
+            break;
+          case 8:
+            dateText += 'Agosto';
+            break;
+          case 9:
+            dateText += 'Septiembre';
+            break;
+          case 10:
+            dateText += 'Octubre';
+            break;
+            case 11:
+            dateText += 'Noviembre';
+            break;
+            case 12:
+            dateText += 'Diciembre';
+            break;
+          default:
+          dateText += 'Mes erroneo';
+        }
+        dateText += ' de ' + date[2];
+        return dateText;
       }
 
 
