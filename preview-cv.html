@@ -4,6 +4,8 @@
 <link rel="import" href="../iron-icons/editor-icons.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
 
 
 <dom-module id="preview-cv">
@@ -91,7 +93,7 @@
               <p>Nivel: <paper-progress class$="{{_definirEstiloPorNivel(lp)}}" value={{lp.nivel}} ></paper-progress></p>
             </template>
             <template is="dom-if" if="[[lenguajesEdit]]">
-              <p><paper-input style="font-size: 16px;" label="[[lp.nombre]]" value="{{lp.nivel}}"> </paper-input></p>
+              <p><paper-input style="font-size: 12px;" label="[[lp.nombre]]" value="{{lp.nivel}}"> </paper-input></p>
            </template>
         </template>
         <template is="dom-if" if="[[_congratsFlag]]">
@@ -118,11 +120,23 @@
    
     <paper-card>
     <div class="card-content-in">
-      <p class="header">Experiencia Profesional</p>
+      <p class="header">Experiencia Profesional <iron-icon icon="icons:add-circle-outline" on-click="_agregarJob"></iron-icon></p>
+      <template class="card-content-in" is="dom-if"  if="[[_agregaJob]]" >        
+        <!-- TODO add
+          <button id="button" on-click="toggle">toggle collapse</button>
+          iron-collapse id="collapse" -->
+          <p style="align-items:right;"><iron-icon style="align-content: right;" icon="icons:save" on-click="_guardarJob"></iron-icon></p>
+          <p><paper-input style="font-size: 11px;" label="perfil laboral" > </paper-input></p>
+          <p><paper-input style="font-size: 11px;" label="empresa" > </paper-input></p>
+          <p><paper-input style="font-size: 11px;" label="fechas" > </paper-input></p>
+      </template> 
     <template is="dom-repeat"  items="[[jobs]]" as="job" >
-      <p class="header-content">[[job.title]]</p>
+      <p class="header-content">[[job.title]] 
+        <!--iron-icon icon="icons:delete" on-click="_eliminarJob"></iron-icon -->
+        <paper-icon-button icon="icons:delete" on-click="_eliminarJob"></paper-icon-button>
+      </p>
       <p>[[job.empresa]]</p>
-      <p >{{_getSpellingDate(job.fechaInicio)}} - {{_getSpellingDate(job.fechaFin)}}</p>
+      <p>{{_getSpellingDate(job.fechaInicio)}} - {{_getSpellingDate(job.fechaFin)}}</p>
     </template> 
     </div>    
     </paper-card>   
@@ -141,6 +155,8 @@
      * @polymer
      * @demo demo/index.html
      */
+
+    
     class PreviewCv extends Polymer.Element {
       static get is() { return 'preview-cv'; }
       static get properties() {
@@ -171,21 +187,15 @@
           },
           lenguajes: {
             type: Array,
-            value: [{nombre:'Java', nivel:80},
-            {nombre:'C', nivel:50},
-            {nombre:'C++', nivel:50},
-            {nombre:'JavaScript', nivel:30}],
-            observer: '_checkLevel'         
+            value: [{nombre:'Java', nivel:100},
+            {nombre:'C', nivel:100},
+            {nombre:'C++', nivel:100},
+            {nombre:'JavaScript', nivel:100}]  
           },
           lenguajesEdit: {
             type: Boolean,
             value: false
-          },
-          lenguajesComp: {
-            type: Array,
-            value: this.lenguajes,
-            computed:''    
-          },          
+          },               
           disponibilidadViajar: {
             type: Boolean,
             value: true
@@ -198,6 +208,10 @@
             {empresa:'DSS México S.A de C.V', title:'Desarrollador SOA', fechaInicio:'01/07/2013', fechaFin:'01/08/2014'},
             {empresa:'UANL- Centro de Desarrollo México', title:'Desarrollador SOA', fechaInicio:'01/03/2013', fechaFin:'01/08/2013'}]          
           },
+          _agregaJob: {
+            type: Boolean,
+            value: false
+          },
           _congratsFlag:{
             type: Boolean,
             value: false
@@ -205,6 +219,12 @@
         };
       }
 
+      _agregarJob = () => {
+          this._agregaJob = true;        
+      }
+      _guardarJob(job){
+          this._agregaJob = false;        
+      }
       _apagarDisponibilidad() {
         this.disponibilidadViajar = false;
       }
@@ -230,21 +250,27 @@
       _guardarSkills() {
         this.lenguajesEdit = false;
       }
-      _checkLevel(arrayActual, arrayAnterior) {
-        console.log('_checkLevel::::::::::' + arrayActual);
-        this._congratsFlag = true;
-        arrayActual.map(l => {
-          console.log('l.nivel::: ' + l.nivel);
-          if(l.nivel < 100){
-            console.log('ENTROOOOO:: ');
-            this._congratsFlag = false;
-          }
-        });        
+
+      _eliminarJob = (e) => {
+        console.log("job::::: " + e.model);
+       // console.log(":::::::::::" + this.jobs.indexOf(job));
+       // this.jobs.splice(this.jobs.indexOf(job), 1);
+      }
+
+      static get observers(){
+        return['_observerLevelLang(lenguajes.*)']
+      }
+      _observerLevelLang(lenguajes) {
+        console.log('_checkLevel::::::::::' + lenguajes);
+        //this.set('_congratsFlag',true);
+
+      //  this._congratsFlag = lenguajes.every((currentValue) => currentValue === 100);
+        console.log("this._congratsFlag______: " + this._congratsFlag);
       }
 
       _getSpellingDate(item) {
         let date = item.split('/');
-        let dateText = '';
+        let dateText = date[0] + ' de ';
         let mesInt = parseInt(date[1]);
         switch(mesInt) {
           case 1:
@@ -284,14 +310,11 @@
             dateText += 'Diciembre';
             break;
           default:
-          dateText += 'Mes erroneo';
+          dateText += 'Mes erróneo';
         }
         dateText += ' de ' + date[2];
         return dateText;
-      }
-
-
-    
+      }    
     }
 
     window.customElements.define(PreviewCv.is, PreviewCv);
