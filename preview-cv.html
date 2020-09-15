@@ -5,7 +5,6 @@
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../iron-collapse/iron-collapse.html">
 
 
 <dom-module id="preview-cv">
@@ -71,8 +70,9 @@
         <template is="dom-if" if="[[!editEmail]]">
           <p>[[email]] <iron-icon icon="icons:create" on-click="_editar"></iron-icon></p>   
         </template>
-        <template is="dom-if" if="[[editEmail]]">
-          <p><paper-input  id="inputEmail" value="{{email}}"> </paper-input>  <iron-icon icon="icons:check" on-click="_guardar"></iron-icon> </p>
+        <template is="dom-if" if="{{editEmail}}">
+          <p><paper-input  id="inputEmail" value="{{email}}">
+             </paper-input>  <iron-icon icon="icons:check" on-click="_guardar"></iron-icon> </p>
         </template>
         <template is="dom-if" if="[[disponibilidadViajar]]">Disponibilidad para viajar
           <iron-icon icon="icons:clear" on-click="_apagarDisponibilidad"></iron-icon>
